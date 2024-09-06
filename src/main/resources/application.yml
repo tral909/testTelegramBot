@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: test.telegram.bot
+  config:
+    import: optional:file:.env[.properties]
+
+bot:
+  name: ${BOT_NAME}
+  token: ${BOT_TOKEN}
