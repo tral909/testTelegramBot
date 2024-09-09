@@ -16,4 +16,12 @@ public class CbrService {
     public ValCurs getExchangeRates() {
         return restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
     }
+
+    public ValCurs.Valute getExchangeRatesByCharCode(String charCode) {
+        var response = restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
+        return response.getValute().stream()
+                .filter(v -> v.getCharCode().equalsIgnoreCase(charCode))
+                .findAny()
+                .orElse(null);
+    }
 }
