@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -17,6 +19,11 @@ public class CbrController {
     @GetMapping("exchange-rates")
     public ValCurs getExchangeRates() {
         return cbrService.getExchangeRates();
+    }
+
+    @GetMapping("exchange-rates/main-valutes")
+    public List<ValCurs.Valute> getExchangeRatesMainValutes() {
+        return cbrService.getExchangeRatesMainValutes();
     }
 
     @GetMapping("exchange-rates/{charCode}")
