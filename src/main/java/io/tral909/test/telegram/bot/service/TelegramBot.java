@@ -41,13 +41,17 @@ public class TelegramBot extends TelegramLongPollingBot {
                     startCommandReceived(chatId, message.getChat().getFirstName());
                     break;
 
-                case "/val":
-                    // due to 400 from tg - too long message (for long valutes list from cbr)
-                    // return first 3 valutes
-                    sendMessage(chatId, cbrService.getExchangeRates().getValute()
-                            .stream().limit(3)
+                case "/mainvalutes":
+                    // due to 400 error from tg - too long message (for long valutes list from cbr)
+                    // return main 3 valutes
+
+                    var response = cbrService.getExchangeRatesMainValutes();
+                    var respText = "Курс валют на " + response.getDate() + "\n\n" +
+                            response.getValute().stream()
                             .map(v -> v.getCharCode() + "\n" + v.getName() + "\n" + v.getValue())
-                            .collect(Collectors.joining("\n\n")));
+                            .collect(Collectors.joining("\n\n"));
+
+                    sendMessage(chatId, respText);
                     break;
 
                 default:

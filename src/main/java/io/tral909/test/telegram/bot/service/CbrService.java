@@ -1,6 +1,7 @@
 package io.tral909.test.telegram.bot.service;
 
 import io.tral909.test.telegram.bot.dto.ValCurs;
+import io.tral909.test.telegram.bot.dto.ValuteDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,18 +22,30 @@ public class CbrService {
         return restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
     }
 
-    public List<ValCurs.Valute> getExchangeRatesMainValutes() {
+    public ValCurs getExchangeRatesMainValutes() {
         var response = restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
-        return response.getValute().stream()
+        response.setValute(response.getValute().stream()
                 .filter(v -> MAIN_VALUTE_CODES.contains(v.getCharCode().toUpperCase(Locale.ROOT)))
-                .toList();
+                .toList());
+        return response;
     }
 
-    public ValCurs.Valute getExchangeRatesByCharCode(String charCode) {
+    public ValuteDto getExchangeRatesByCharCode(String charCode) {
         var response = restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
-        return response.getValute().stream()
+        ValCurs.Valute foundValute = response.getValute().stream()
                 .filter(v -> v.getCharCode().equalsIgnoreCase(charCode))
                 .findAny()
-                .orElse(null);
+                .orElseThrow(); //todo add better exception
+
+        return ValuteDto.builder()
+                .date(response.getDate())
+                .valute(ValuteDto.Valute.builder()
+                        .charCode(foundValute.getCharCode())
+                        .name(foundValute.getName())
+                        .nominal(foundValute.getNominal())
+                        .value(foundValute.getValue())
+                        .vunitRate(foundValute.getVunitRate())
+                        .build())
+                .build();
     }
 }
