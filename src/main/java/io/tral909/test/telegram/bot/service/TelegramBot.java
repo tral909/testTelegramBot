@@ -61,7 +61,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(Long chatId, String name) {
-        String answer = "Hi, " + name + ", nice to meet you!";
+        String answer = "Hi, " + name + ", nice to meet you!\n\n" +
+                """
+                You can use next commands:
+                /mainvalutes - get BYN USD EUR exchange rates
+                """;
         sendMessage(chatId, answer);
     }
 
