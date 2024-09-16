@@ -3,6 +3,7 @@ package io.tral909.test.telegram.bot.service;
 import io.tral909.test.telegram.bot.dto.ValCurs;
 import io.tral909.test.telegram.bot.dto.ValuteDto;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,10 +19,12 @@ public class CbrService {
     @Value("${cbr.exchange-rates.url}")
     private String exchangeRatesUrl;
 
+    @Cacheable("exchange-rates")
     public ValCurs getExchangeRates() {
         return restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
     }
 
+    @Cacheable("exchange-rates-main-valutes")
     public ValCurs getExchangeRatesMainValutes() {
         var response = restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
         response.setValute(response.getValute().stream()
@@ -30,6 +33,7 @@ public class CbrService {
         return response;
     }
 
+    @Cacheable("exchange-rates-by-char-code")
     public ValuteDto getExchangeRatesByCharCode(String charCode) {
         var response = restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
         ValCurs.Valute foundValute = response.getValute().stream()
