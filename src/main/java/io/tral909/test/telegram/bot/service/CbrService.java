@@ -1,11 +1,11 @@
 package io.tral909.test.telegram.bot.service;
 
+import io.tral909.test.telegram.bot.client.CbrClient;
 import io.tral909.test.telegram.bot.dto.ValCurs;
 import io.tral909.test.telegram.bot.dto.ValuteDto;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Locale;
@@ -13,20 +13,18 @@ import java.util.Locale;
 @Service
 public class CbrService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
     private final static List<String> MAIN_VALUTE_CODES = List.of("USD", "EUR", "BYN");
 
-    @Value("${cbr.exchange-rates.url}")
-    private String exchangeRatesUrl;
+    @Autowired
+    private CbrClient cbrClient;
 
-    @Cacheable("exchange-rates")
     public ValCurs getExchangeRates() {
-        return restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
+        return cbrClient.getExchangeRates();
     }
 
     @Cacheable("exchange-rates-main-valutes")
     public ValCurs getExchangeRatesMainValutes() {
-        var response = restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
+        var response = cbrClient.getExchangeRates();
         response.setValute(response.getValute().stream()
                 .filter(v -> MAIN_VALUTE_CODES.contains(v.getCharCode().toUpperCase(Locale.ROOT)))
                 .toList());
@@ -35,7 +33,7 @@ public class CbrService {
 
     @Cacheable("exchange-rates-by-char-code")
     public ValuteDto getExchangeRatesByCharCode(String charCode) {
-        var response = restTemplate.getForEntity(exchangeRatesUrl, ValCurs.class).getBody();
+        var response = cbrClient.getExchangeRates();
         ValCurs.Valute foundValute = response.getValute().stream()
                 .filter(v -> v.getCharCode().equalsIgnoreCase(charCode))
                 .findAny()
