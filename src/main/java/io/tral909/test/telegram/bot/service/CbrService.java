@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Service
 public class CbrService {
@@ -37,7 +38,7 @@ public class CbrService {
         ValCurs.Valute foundValute = response.getValute().stream()
                 .filter(v -> v.getCharCode().equalsIgnoreCase(charCode))
                 .findAny()
-                .orElseThrow(); //todo add better exception
+                .orElseThrow(() -> new NoSuchElementException("Char code " + charCode + " is absent"));
 
         return ValuteDto.builder()
                 .date(response.getDate())
