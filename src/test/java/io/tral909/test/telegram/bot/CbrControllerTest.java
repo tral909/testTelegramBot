@@ -125,5 +125,44 @@ public class CbrControllerTest {
         Mockito.verify(cbrClient).getExchangeRates();
     }
 
-    //todo add remaining 1 test
+    @Test
+    void getExchangeRatesByCharCodeSuccess() throws Exception {
+        var valCurs = new ValCurs();
+        valCurs.setDate("16.09.1992");
+
+        var valute1 = new ValCurs.Valute();
+        valute1.setCharCode("USD");
+        valute1.setName("Доллар США");
+        valute1.setVunitRate("91,2");
+        valute1.setValue("91,2");
+        valute1.setNominal("1");
+        var valute2 = new ValCurs.Valute();
+        valute2.setCharCode("EUR");
+        valute2.setName("Евро");
+        valute2.setVunitRate("101,2");
+        valute2.setValue("101,2");
+        valute2.setNominal("1");
+        var valute3 = new ValCurs.Valute();
+        valute3.setCharCode("BYN");
+        valute3.setName("Белорусский рубль");
+        valute3.setVunitRate("28,3075");
+        valute3.setValue("28,3075");
+        valute3.setNominal("1");
+
+        valCurs.setValute(List.of(valute1, valute2, valute3));
+
+        Mockito.when(cbrClient.getExchangeRates()).thenReturn(valCurs);
+
+        mockMvc.perform(get("/exchange-rates/{code}", "byn"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.date", is("16.09.1992")))
+                .andExpect(jsonPath("$.valute.charCode", is("BYN")))
+                .andExpect(jsonPath("$.valute.name", is("Белорусский рубль")))
+                .andExpect(jsonPath("$.valute.nominal", is("1")))
+                .andExpect(jsonPath("$.valute.value", is("28,3075")))
+                .andExpect(jsonPath("$.valute.vunitRate", is("28,3075")));
+
+        Mockito.verify(cbrClient).getExchangeRates();
+    }
 }
