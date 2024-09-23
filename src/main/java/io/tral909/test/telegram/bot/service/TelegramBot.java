@@ -2,17 +2,31 @@ package io.tral909.test.telegram.bot.service;
 
 import io.tral909.test.telegram.bot.properties.BotProperties;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class TelegramBot extends TelegramLongPollingBot {
+
+    private static final String HELP_TEXT = "This bot is created to demonstrate Spring and telegrambots library capabilities.\n\n"
+            + "You can execute commands from the main menu on the left or by typing "
+            + "Type /start to see welcome message"
+            + "Type /mainvalutes to see main exchange rates";
+    //todo add all commands description
 
     private final BotProperties botProperties;
     private final CbrService cbrService;
@@ -22,6 +36,19 @@ public class TelegramBot extends TelegramLongPollingBot {
         super(botProperties.getToken());
         this.botProperties = botProperties;
         this.cbrService = cbrService;
+        List<BotCommand> commands = new ArrayList<>();
+        commands.add(new BotCommand("/start", "get a welcome message"));
+        commands.add(new BotCommand("/mydata", "get your data stored"));
+        commands.add(new BotCommand("/deletedata", "delete my data"));
+        commands.add(new BotCommand("/help", "info how to use this bot"));
+        commands.add(new BotCommand("/settings", "set your preferences"));
+        commands.add(new BotCommand("/mainvalutes", "get BYN USD EUR exchange rates"));
+
+        try {
+            this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
+        } catch (TelegramApiException e) {
+            log.error("Error setting bot's command list: " + e.getMessage());
+        }
     }
 
     @Override
@@ -54,6 +81,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessage(chatId, respText);
                     break;
 
+                case "/help":
+                    sendMessage(chatId, HELP_TEXT);
+                    break;
+
                 default:
                     sendMessage(chatId, "Sorry, command was not recognized");
             }
@@ -61,11 +92,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(Long chatId, String name) {
-        String answer = "Hi, " + name + ", nice to meet you!\n\n" +
-                """
+        String answer = "Hi, " + name + ", nice to meet you!"; //"\n\n" +
+                /*"""
                 You can use next commands:
                 /mainvalutes - get BYN USD EUR exchange rates
-                """;
+                """;*/
         sendMessage(chatId, answer);
     }
 
