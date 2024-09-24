@@ -1,15 +1,25 @@
-version: '3.1'
+version: "3.1"
 
 services:
-  mysql_db:
-    image: mysql:8.0.39
+  postgres:
+    image: postgres:14.8-alpine3.18
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:24.2.1
     restart: always
     ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      - "8088:8978"
     volumes:
-      - ./mysql/data:/var/lib/mysql
+      - ./cloudbeaver:/opt/cloudbeaver/workspace
+    # to avoid GC thread error start application on my docker desktop version
+    security_opt:
+      - seccomp:unconfined
