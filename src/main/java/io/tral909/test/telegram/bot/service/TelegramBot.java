@@ -1,5 +1,7 @@
 package io.tral909.test.telegram.bot.service;
 
+import io.tral909.test.telegram.bot.model.User;
+import io.tral909.test.telegram.bot.model.UserRepository;
 import io.tral909.test.telegram.bot.properties.BotProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,12 +33,14 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotProperties botProperties;
     private final CbrService cbrService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public TelegramBot(BotProperties botProperties, CbrService cbrService) {
+    public TelegramBot(BotProperties botProperties, CbrService cbrService, UserRepository userRepository) {
         super(botProperties.getToken());
         this.botProperties = botProperties;
         this.cbrService = cbrService;
+        this.userRepository = userRepository;
         List<BotCommand> commands = new ArrayList<>();
         commands.add(new BotCommand("/start", "get a welcome message"));
         commands.add(new BotCommand("/mydata", "get your data stored"));
@@ -65,6 +70,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             switch (messageText) {
                 case "/start":
+                    //todo uncomment when we want to register users
+                    //registerUser(message);
                     startCommandReceived(chatId, message.getChat().getFirstName());
                     break;
 
@@ -88,6 +95,25 @@ public class TelegramBot extends TelegramLongPollingBot {
                 default:
                     sendMessage(chatId, "Sorry, command was not recognized");
             }
+        }
+    }
+
+    private void registerUser(Message message) {
+
+        if (userRepository.findById(message.getChatId()).isEmpty()) {
+
+            var chatId = message.getChatId();
+            var chat = message.getChat();
+
+            User user = new User();
+            user.setChatId(chatId);
+            user.setFirstName(chat.getFirstName());
+            user.setLastName(chat.getLastName());
+            user.setUserName(chat.getUserName());
+            user.setRegisteredAt(new Timestamp(System.currentTimeMillis()));
+
+            userRepository.save(user);
+            log.info("user saved: " + user);
         }
     }
 

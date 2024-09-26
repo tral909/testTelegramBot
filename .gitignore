@@ -37,3 +37,6 @@ out/
 .vscode/
 
 .env
+docker/cloudbeaver
+docker/pg-data
+docker/.env

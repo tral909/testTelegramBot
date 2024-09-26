@@ -3,6 +3,27 @@ spring:
     name: test.telegram.bot
   config:
     import: optional:file:.env[.properties]
+#  autoconfigure:
+#    exclude: >-
+#      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,
+#      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,
+#      org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  # this property to run app if db is unreachable
+  sql:
+    init:
+      continue-on-error: true
+  jpa:
+    # this property to run app if db is unreachable
+    database: POSTGRESQL
+    show-sql: true
+    # ddl-auto need to be disabled to run app if db is unreachable
+    #hibernate:
+    #  ddl-auto: update
 
 bot:
   name: ${BOT_NAME}
