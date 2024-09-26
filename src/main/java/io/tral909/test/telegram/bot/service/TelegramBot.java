@@ -1,5 +1,6 @@
 package io.tral909.test.telegram.bot.service;
 
+import com.vdurmont.emoji.EmojiParser;
 import io.tral909.test.telegram.bot.model.User;
 import io.tral909.test.telegram.bot.model.UserRepository;
 import io.tral909.test.telegram.bot.properties.BotProperties;
@@ -118,7 +119,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(Long chatId, String name) {
-        String answer = "Hi, " + name + ", nice to meet you!"; //"\n\n" +
+        String answer = EmojiParser.parseToUnicode("Hi, " + name + ", nice to meet you! :wave:");
+        /*String answer = "Hi, " + name + ", nice to meet you!"; //"\n\n" +
                 /*"""
                 You can use next commands:
                 /mainvalutes - get BYN USD EUR exchange rates

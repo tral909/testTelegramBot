@@ -31,6 +31,7 @@ dependencies {
 	implementation("com.github.ben-manes.caffeine:caffeine")
 	implementation("org.telegram:telegrambots:6.9.7.1")
 	implementation("com.sun.xml.bind:jaxb-impl:4.0.5")
+	implementation("com.vdurmont:emoji-java:5.1.1")
 
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
