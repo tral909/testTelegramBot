@@ -11,11 +11,14 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -53,7 +56,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         commands.add(new BotCommand("/mainvalutes", "get BYN USD EUR exchange rates"));
 
         try {
-            this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
+            execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
             log.error("Error setting bot's command list: " + e.getMessage());
         }
@@ -85,8 +88,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                     var response = cbrService.getExchangeRatesMainValutes();
                     var respText = "Курс валют на " + response.getDate() + "\n\n" +
                             response.getValute().stream()
-                            .map(v -> v.getCharCode() + "\n" + v.getName() + "\n" + v.getValue())
-                            .collect(Collectors.joining("\n\n"));
+                                    .map(v -> v.getCharCode() + "\n" + v.getName() + "\n" + v.getValue())
+                                    .collect(Collectors.joining("\n\n"));
 
                     sendMessage(chatId, respText);
                     break;
@@ -95,9 +98,66 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessage(chatId, HELP_TEXT);
                     break;
 
+                case "/register":
+                    register(chatId);
+                    break;
+
                 default:
                     sendMessage(chatId, "Sorry, command was not recognized");
             }
+        // Если id кнопки передался от юзера при нажатии, то тут обрабатывам
+        } else if (update.hasCallbackQuery()) {
+            String callbackData = update.getCallbackQuery().getData();
+            int messageId = update.getCallbackQuery().getMessage().getMessageId();
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+
+            String text = null;
+            if (callbackData.equals("YES_BUTTON")) {
+                text = "You presses YES button";
+            } else if (callbackData.equals("NO_BUTTON")) {
+                text = "You presses NO button";
+            }
+            EditMessageText editMessage = new EditMessageText();
+            editMessage.setChatId(chatId);
+            editMessage.setMessageId(messageId);
+            editMessage.setText(text);
+
+            try {
+                execute(editMessage);
+            } catch (TelegramApiException e) {
+                log.error("Error occured: " + e.getMessage());
+            }
+        }
+    }
+
+    private void register(long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText("Do you really want to register?");
+
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+
+        var yesButton = new InlineKeyboardButton();
+        yesButton.setText("Yes");
+        yesButton.setCallbackData("YES_BUTTON");
+
+        var noButton = new InlineKeyboardButton();
+        noButton.setText("No");
+        noButton.setCallbackData("NO_BUTTON");
+
+        rowInLine.add(yesButton);
+        rowInLine.add(noButton);
+
+        rowsInLine.add(rowInLine);
+        markupInLine.setKeyboard(rowsInLine);
+        message.setReplyMarkup(markupInLine);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            log.error("Error occured: " + e.getMessage());
         }
     }
 
@@ -146,7 +206,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         keyboardRows.add(row);
 
         row = new KeyboardRow();
-        row.add("register");
+        row.add("/register");
         row.add("check my data");
         row.add("delete my data");
         keyboardRows.add(row);
