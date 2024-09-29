@@ -25,6 +25,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -73,6 +74,20 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasMessage() && message.hasText()) {
             String messageText = message.getText();
             Long chatId = message.getChatId();
+
+            if (messageText.contains("/send") && Objects.equals(botProperties.getOwnerId(), chatId)) {
+                var textToSend = EmojiParser.parseToUnicode(messageText.substring(messageText.indexOf(" ")));
+                var users = userRepository.findAll();
+                for (User user : users) {
+                    sendMessage(user.getChatId(), textToSend);
+                }
+                return;
+            }
+
+            if (messageText.contains("/send")) {
+                log.info("/send command was called by simple user");
+                return;
+            }
 
             switch (messageText) {
                 case "/start":

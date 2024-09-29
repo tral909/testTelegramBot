@@ -28,6 +28,7 @@ spring:
 bot:
   name: ${BOT_NAME}
   token: ${BOT_TOKEN}
+  ownerId: ${BOT_OWNER_ID}
 
 cbr:
   exchange-rates:
