@@ -30,6 +30,9 @@ bot:
   token: ${BOT_TOKEN}
   ownerId: ${BOT_OWNER_ID}
 
+cron:
+  scheduler: '* * * * * *'
+
 cbr:
   exchange-rates:
     url: https://www.cbr.ru/scripts/XML_daily.asp
